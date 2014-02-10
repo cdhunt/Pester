@@ -107,13 +107,18 @@ function get-PesterResultObject {
     $failureMessage = $pester.testResult.failureMessage
     $stackTrace = $pester.testResult.stackTrace
 
-    [PScustomObject]@{Describes = $pester.testResults.CurrentDescribe.name
-                       Context = $pester.testResults.CurrentContext
-                       TestDepth = $pester.results.TestDepth
-                       Test = $name
-                       TestTime = $pester.humanSeconds
-                       Success = $pester.testResult.success
-    }
+    $object = [PScustomObject]@{Describes = $pester.testResults.CurrentDescribe.name
+                                Context = $pester.testResults.CurrentContext
+                                TestDepth = $pester.results.TestDepth
+                                Test = $name
+                                TestTime = $pester.testTime
+                                Success = $pester.testResult.success
+                                FailureMessage = $failureMessage
+                                StackTrace = $stackTrace }
+
+    $object.PSObject.TypeNames.Insert(0, 'Pester.TestResult')
+
+    Write-Output $object
 }
 
 function write-PesterResult{ 
@@ -123,7 +128,7 @@ param([switch]$Host, [switch]$Verbose, [switch]$PassThru)
     $pester.margin = " " * $testResultObject.TestDepth
     $pester.error_margin = $pester.margin * 2
     $pester.output = " $($pester.margin)$($testResultObject.Test)"
-    $testOutputString = "$($pester.output) $($testResultObject.TestTime)"
+    $testOutputString = "$($pester.output) $($pester.humanSeconds)"
     <#
     $pester.margin = " " * $pester.results.TestDepth
     $pester.error_margin = $pester.margin * 2

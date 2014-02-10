@@ -1,0 +1,123 @@
+<Configuration>
+<ViewDefinitions>
+<View>
+  <Name>TestResultsList</Name>
+  <ViewSelectedBy>
+    <TypeName>Pester.TestResult</TypeName>
+  </ViewSelectedBy>
+  <GroupBy>
+	<Label>Fixture</Label>
+	<ScriptBlock>"{0} \ {1}" -f $_.Describes, $_.Context</ScriptBlock>
+  </GroupBy>
+  <ListControl>
+    <ListEntries>
+      <ListEntry>
+        <ListItems>
+          <!--<ListItem>
+            <PropertyName>Context</PropertyName>
+          </ListItem>	
+          <ListItem>
+            <PropertyName>Test</PropertyName>
+          </ListItem>
+          <ListItem>
+            <PropertyName>Success</PropertyName>
+          </ListItem>
+          <ListItem>
+            <PropertyName>TestTime</PropertyName>
+          </ListItem>		 -->	
+		  <ListItem>
+			<Label>It</Label>
+			<ScriptBlock>
+				if($_.TestTime.TotalSeconds -gt 0.99) {
+					$time = [math]::Round($_.TestTime.TotalSeconds, 2)
+					$unit = "s"
+				}
+				else {
+					$time = [math]::Floor($_.TestTime.TotalSeconds * 1000)
+					$unit = "ms"
+				}	
+			
+				if ($_.Success -eq $TRUE)
+				{
+					"[X] $($_.Test) $time$unit"
+				}
+				else
+				{
+					"[-]  $($_.Test) $time$unit`n`r$($_.FailureMessage)`n`r$($_.StackTrace)"
+				}
+			</ScriptBlock>
+		  </ListItem>			
+        </ListItems>
+      </ListEntry>
+    </ListEntries>
+  </ListControl>
+</View>
+<View>
+    <Name>TestResultsTable</Name>
+    <ViewSelectedBy>
+	<TypeName>Pester.TestResult</TypeName>
+    </ViewSelectedBy>
+    <TableControl>
+	<TableHeaders>
+	    <TableColumnHeader>
+			<Label>Test</Label>
+			<Width>55</Width>
+			<Alignment>left</Alignment>
+	    </TableColumnHeader>
+	    <TableColumnHeader>
+			<Label>Describes</Label>
+			<Width>20</Width>
+			<Alignment>left</Alignment>
+	    </TableColumnHeader>
+	    <TableColumnHeader>
+			<Label>Context</Label>
+			<Width>20</Width>
+			<Alignment>left</Alignment>
+	    </TableColumnHeader>		
+        <TableColumnHeader>
+            <Label>Time</Label>
+            <Width>6</Width>
+            <Alignment>right</Alignment>
+        </TableColumnHeader>
+	</TableHeaders>
+	<TableRowEntries>
+	    <TableRowEntry>
+		<TableColumnItems>
+		    <TableColumnItem>
+                <ScriptBlock>
+                if ($_.Success -eq $TRUE)
+                {
+                    "[X] $($_.Test)"
+                }
+                else
+                {
+                    "[-] $($_.Test)"
+                }
+		        </ScriptBlock>
+		    </TableColumnItem>
+		    <TableColumnItem>
+				<PropertyName>Describes</PropertyName>			   
+		    </TableColumnItem>
+		    <TableColumnItem>
+				<PropertyName>Context</PropertyName>			   
+		    </TableColumnItem>				
+            <TableColumnItem>
+				<ScriptBlock>
+					if($_.TestTime.TotalSeconds -gt 0.99) {
+						$time = [math]::Round($_.TestTime.TotalSeconds, 2)
+						$unit = "s"
+					}
+					else {
+						$time = [math]::Floor($_.TestTime.TotalSeconds * 1000)
+						$unit = "ms"
+					}
+					"$time$unit"
+				</ScriptBlock>
+            </TableColumnItem>
+        </TableColumnItems>
+	    </TableRowEntry>
+	</TableRowEntries>
+    </TableControl>
+</View>
+</ViewDefinitions>
+</Configuration>

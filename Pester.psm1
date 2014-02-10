@@ -18,6 +18,7 @@ function Get-VariableAsHash {
   ? { -not ($_.ProviderPath.Contains(".Tests.")) } |
   % { . $_.ProviderPath }
 
+Update-FormatData "$PSScriptRoot\Pester.format.ps1xml"
 
 function Invoke-Pester {
 <#
@@ -90,7 +91,7 @@ Describe
 about_pester
 
 #>
-    [CmdletBinding(SupportsShouldProcess=$true, HelpUri = 'http://www.microsoft.com/', ConfirmImpact='Medium')]
+    [CmdletBinding(SupportsShouldProcess=$true, HelpUri = 'https://github.com/pester/Pester/wiki', ConfirmImpact='Medium')]
     param(
         [Parameter(Position=0)]
         [string]$relative_path = ".",
@@ -129,7 +130,7 @@ about_pester
         . "$PSScriptRoot\ObjectAdaptations\PesterFailure.ps1"
         Update-TypeData -pre "$PSScriptRoot\ObjectAdaptations\types.ps1xml" -ErrorAction SilentlyContinue
     }
-
+    $failme = 'ermuhgurhd' # Temporary to force a test failure
     $pester.outputOptions = @{NUnitXmlFile = $NUnitXmlFile
                               LogFile = $LogFile
                               WriteHost = $WriteHost
