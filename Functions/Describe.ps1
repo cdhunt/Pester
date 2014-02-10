@@ -69,8 +69,9 @@ param(
         Tests = @()
     }
 
+    $pester.outputOptions.WriteDescribesToggle = $true
     $pester.output = $pester.margin + "Describing " + $name
-    Write-Host -ForegroundColor Magenta $($pester.output)
+    #Write-Host -ForegroundColor Magenta $($pester.output)
 	New-TestDrive
 	& $fixture
 	Remove-TestDrive

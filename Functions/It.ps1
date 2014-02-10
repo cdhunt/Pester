@@ -89,7 +89,7 @@ param(
     $pester.testResult = Get-PesterResult $pester.ThisTest $PesterException
     $pester.results.CurrentDescribe.Tests += $pester.testResult
     $pester.results.TotalTime += $pester.testTime.TotalSeconds
-    Write-PesterResult
+    Logging 
 }
 
 function Setup-TestFunction {
@@ -100,19 +100,87 @@ $test
 "@ | Microsoft.Powershell.Utility\Out-File $TestDrive\temp.ps1
 }
 
-function write-PesterResult{
+
+function get-PesterResultObject {
+    $pester.humanSeconds = Get-HumanTime $pester.testTime.TotalSeconds
+    
+    $failureMessage = $pester.testResult.failureMessage
+    $stackTrace = $pester.testResult.stackTrace
+
+    [PScustomObject]@{Describes = $pester.testResults.CurrentDescribe.name
+                       Context = $pester.testResults.CurrentContext
+                       TestDepth = $pester.results.TestDepth
+                       Test = $name
+                       TestTime = $pester.humanSeconds
+                       Success = $pester.testResult.success
+    }
+}
+
+function write-PesterResult{ 
+param([switch]$Host, [switch]$Verbose, [switch]$PassThru)
+    
+    $testResultObject = get-PesterResultObject
+    $pester.margin = " " * $testResultObject.TestDepth
+    $pester.error_margin = $pester.margin * 2
+    $pester.output = " $($pester.margin)$($testResultObject.Test)"
+    $testOutputString = "$($pester.output) $($testResultObject.TestTime)"
+    <#
     $pester.margin = " " * $pester.results.TestDepth
     $pester.error_margin = $pester.margin * 2
     $pester.output = " $($pester.margin)$name"
     $pester.humanSeconds = Get-HumanTime $pester.testTime.TotalSeconds
-    if($pester.testResult.success) {
-        "[+] $($pester.output) $($pester.humanSeconds)" | Write-Host -ForegroundColor DarkGreen;
+    $output = "$($pester.output) $($pester.humanSeconds)"
+    #>
+
+    if ($pester.outputOptions.WriteDescribesToggle)
+    {
+        $describeOutputString = "$($pester.margin)$($testResultObject.Describes)"
+        if ($Host) {
+            Write-Host $describeOutputString -ForegroundColor Magenta
+        } else {
+            Write-Verbose $describeOutputString
+        }
+        $pester.outputOptions.WriteDescribesToggle = $false
+    }
+
+    if ($pester.outputOptions.WriteContextToggle)
+    {
+        $contextOutputString = "$($pester.margin)$($testResultObject.Context)"
+        if ($Host) {
+            Write-Host $contextOutputString -ForegroundColor Magenta
+        } else {
+            Write-Verbose $contextOutputString
+        }
+        $pester.outputOptions.WriteContextToggle = $false
+    }
+
+    if ($testResultObject.Success) {        
+        if ($Host) { 
+            "[+] $testOutputString" | Write-Host -ForegroundColor DarkGreen
+        } elseif ($Verbose) { 
+            $testOutputString | Write-Verbose 
+        }
     }
     else {
-        "[-] $($pester.output) $($pester.humanSeconds)" | Write-Host -ForegroundColor red
-         Write-Host -ForegroundColor red $($pester.error_margin)$($pester.testResult.failureMessage)
-         Write-Host -ForegroundColor red $($pester.error_margin)$($pester.testResult.stackTrace)
+        $failureMessageString = "$($pester.error_margin)$($testResultObject.failureMessage)"
+        $stackTraceString = "$($pester.error_margin)$($testResultObject.stackTrace)"
+
+        if ($Host) {
+            "[-] $testOutputString" | Write-Host -ForegroundColor red
+            Write-Host -ForegroundColor red $failureMessageString
+            Write-Host -ForegroundColor red $stackTraceString
+        } elseif ($Verbose) {
+            $testOutputString | Write-Warning
+            $failureMessageString | Write-Warning
+            $stackTraceString | Write-Warning
+        }
     }
+
+    if ($PassThru)
+    {
+        Write-Output $testResultObject
+    }
+    
 }
 
 function Get-PesterResult{

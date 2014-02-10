@@ -50,8 +50,20 @@ Informs Inoke-Pester to only run Describe blocks that match this name.
 .PARAMETER EnableExit
 Will cause Invoke-Pester to exit with a exit code equal to the number of failed tests once all tests have been run. Use this to "fail" a build when any tests fail.
 
-.PARAMETER OutputXml
+.PARAMETER NUnitXmlFile
 The path where Invoke-Pester will save a NUnit formatted test results log file. If this path is not provided, no log will be generated.
+
+.PARAMETER LogFile
+The path where Invoke-Pester will test results to a text log file. If this path is not provided, no log will be generated.
+
+.PARAMETER Tags
+Undefined
+
+.PARAMETER WriteHost
+Will cause Invoke-Pester to write test results to the console.
+
+.PARAMETER PassThru
+Will cause Invoke-Pester to pass test result objects to the pipeline.
 
 .Example
 Invoke-Pester
@@ -78,18 +90,34 @@ Describe
 about_pester
 
 #>
+    [CmdletBinding(SupportsShouldProcess=$true, HelpUri = 'http://www.microsoft.com/', ConfirmImpact='Medium')]
     param(
-        [Parameter(Position=0,Mandatory=0)]
+        [Parameter(Position=0)]
         [string]$relative_path = ".",
-        [Parameter(Position=1,Mandatory=0)]
+        
+        [Parameter(Position=1)]
         [string]$testName = $null, 
-        [Parameter(Position=2,Mandatory=0)]
+
+        [Parameter(Position=2)]
         [switch]$EnableExit, 
-        [Parameter(Position=3,Mandatory=0)]
-        [string]$OutputXml = '',
-        [Parameter(Position=4,Mandatory=0)]
+
+        [Parameter(Position=3)]
+        [string]$NUnitXmlFile,
+        
+        [Parameter(Position=4)]
+        [string]$LogFile,
+        
+        [Parameter(Position=5)]
         [string]$Tags = $null,
-        [switch]$EnableLegacyExpectations = $false
+               
+        [Parameter(Position=6)]
+        [switch]$WriteHost,
+
+        [Parameter(Position=7)]
+        [switch]$EnableLegacyExpectations,
+
+        [Parameter(Position=8)]
+        [switch]$PassThru
 
     )
     $pester = @{}
@@ -101,6 +129,13 @@ about_pester
         . "$PSScriptRoot\ObjectAdaptations\PesterFailure.ps1"
         Update-TypeData -pre "$PSScriptRoot\ObjectAdaptations\types.ps1xml" -ErrorAction SilentlyContinue
     }
+
+    $pester.outputOptions = @{NUnitXmlFile = $NUnitXmlFile
+                              LogFile = $LogFile
+                              WriteHost = $WriteHost
+                              PassThru = $PassThru
+                              WriteDescribesToggle = $false
+                              WriteContextToggle = $false}
 
     $pester.fixtures_path = Resolve-Path $relative_path
     $pester.arr_testTags  = $Tags.Split(' ')

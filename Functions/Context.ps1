@@ -43,8 +43,10 @@ param(
     $pester.results = Get-GlobalTestResults
     $pester.margin = " " * $pester.results.TestDepth
     $pester.results.TestDepth += 1
+    $pester.results.CurrentContext = $name
 
-    Write-Host -ForegroundColor Magenta $pester.margin $name
+    $pester.outputOptions.WriteContextToggle = $true
+    # Write-Host -ForegroundColor Magenta $pester.margin $name
     & $fixture
 	Clear-TestDrive -Exclude ($TestDriveContent).FullName
    	Clear-Mocks
